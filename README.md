@@ -130,3 +130,13 @@ This will:
 - Test isolation: Each test run uses a temporary database
 
 ---
+
+## Improvements and suggestions
+
+- Adding user authentication
+- Interacting with db asynchronously
+- Adding pagination for tasks
+- Replacing sqlite3 with any other db like postgresql
+- Refactoring the api routes into the routers.
+
+
