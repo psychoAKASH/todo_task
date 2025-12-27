@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 import httpx
 
 from .db import init_db
-from .schemas import TaskCreate, TaskUpdate
+from .schemas import Task, TaskCreate, TaskUpdate
 from .crud import (
     create_task,
     get_tasks,
@@ -15,34 +15,40 @@ from .crud import (
     delete_task
 )
 
-
 API_BASE_URL = "http://127.0.0.1:8000/api"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     yield
 
+
 app = FastAPI(
     title="To-Do API",
-              lifespan=lifespan
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 templates = Jinja2Templates(directory="app/templates")
 
 
-@app.get("/api/tasks")
+@app.get("/api/tasks", tags=["Tasks API"],
+         response_model=list[Task], )
 def api_list_tasks():
     return get_tasks()
 
 
-@app.post("/api/tasks")
+@app.post("/api/tasks", tags=["Tasks API"],
+          response_model=dict, )
 def api_create_task(task: TaskCreate):
     task_id = create_task(task)
     return {"id": task_id, "message": "Task created"}
 
 
-@app.get("/api/tasks/{task_id}")
+@app.get("/api/tasks/{task_id}",
+         tags=["Tasks API"],
+         response_model=Task, )
 def api_get_task(task_id: int):
     task = get_task(task_id)
     if not task:
@@ -50,7 +56,7 @@ def api_get_task(task_id: int):
     return task
 
 
-@app.put("/api/tasks/{task_id}")
+@app.put("/api/tasks/{task_id}", tags=["Tasks API"],response_model=dict )
 def api_update_task(task_id: int, task: TaskUpdate):
     updated = update_task(task_id, task.model_dump(exclude_unset=True))
     if not updated:
@@ -58,7 +64,7 @@ def api_update_task(task_id: int, task: TaskUpdate):
     return {"message": "Task updated"}
 
 
-@app.delete("/api/tasks/{task_id}")
+@app.delete("/api/tasks/{task_id}", tags=["Tasks API"], response_model=dict )
 def api_delete_task(task_id: int):
     deleted = delete_task(task_id)
     if not deleted:
@@ -66,8 +72,7 @@ def api_delete_task(task_id: int):
     return {"message": "Task deleted"}
 
 
-
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def web_list(request: Request):
     with httpx.Client() as client:
         response = client.get(f"{API_BASE_URL}/tasks")
@@ -79,7 +84,7 @@ def web_list(request: Request):
     )
 
 
-@app.get("/create", response_class=HTMLResponse)
+@app.get("/create", response_class=HTMLResponse, include_in_schema=False)
 def create_task_form(request: Request):
     return templates.TemplateResponse(
         "create.html",
@@ -87,10 +92,10 @@ def create_task_form(request: Request):
     )
 
 
-@app.post("/create")
+@app.post("/create", include_in_schema=False)
 def create_task_submit(
-    title: str = Form(...),
-    description: str = Form("")
+        title: str = Form(...),
+        description: str = Form("")
 ):
     payload = {
         "title": title,
@@ -103,7 +108,7 @@ def create_task_submit(
     return RedirectResponse("/", status_code=303)
 
 
-@app.get("/edit/{task_id}", response_class=HTMLResponse)
+@app.get("/edit/{task_id}", response_class=HTMLResponse, include_in_schema=False)
 def edit_task_form(task_id: int, request: Request):
     with httpx.Client() as client:
         response = client.get(f"{API_BASE_URL}/tasks/{task_id}")
@@ -119,12 +124,12 @@ def edit_task_form(task_id: int, request: Request):
     )
 
 
-@app.post("/edit/{task_id}")
+@app.post("/edit/{task_id}", include_in_schema=False)
 def edit_task_submit(
-    task_id: int,
-    title: str = Form(...),
-    description: str = Form(""),
-    status: str = Form("pending")
+        task_id: int,
+        title: str = Form(...),
+        description: str = Form(""),
+        status: str = Form("pending")
 ):
     payload = {
         "title": title,
@@ -144,11 +149,9 @@ def edit_task_submit(
     return RedirectResponse("/", status_code=303)
 
 
-@app.post("/delete/{task_id}")
+@app.post("/delete/{task_id}", include_in_schema=False)
 def delete_task_ui(task_id: int):
     with httpx.Client() as client:
         client.delete(f"{API_BASE_URL}/tasks/{task_id}")
 
     return RedirectResponse("/", status_code=303)
-
-
