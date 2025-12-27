@@ -1,0 +1,22 @@
+<h2>Tasks</h2>
+
+<ul>
+  {% for task in tasks %}
+    <li>
+      <b>{{ task.title }}</b> - {{ task.status }}
+
+      <a href="/edit/{{ task.id }}">Edit</a>
+
+      <form
+        action="/delete/{{ task.id }}"
+        method="post"
+        style="display:inline;"
+      >
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+<br>
+<a href="/create">Add Task</a>
