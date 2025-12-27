@@ -1,5 +1,6 @@
 # todo_task
 This repo is about todo crud api
 
-![Tests](https://github.com/<YOUR_USERNAME>/<REPO_NAME>/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/psychoAKASH/todo_task/actions/workflows/tests.yml/badge.svg)
+
 
