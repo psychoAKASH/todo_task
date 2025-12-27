@@ -52,7 +52,7 @@ def api_get_task(task_id: int):
 
 @app.put("/api/tasks/{task_id}")
 def api_update_task(task_id: int, task: TaskUpdate):
-    updated = update_task(task_id, task.dict(exclude_unset=True))
+    updated = update_task(task_id, task.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"message": "Task updated"}
